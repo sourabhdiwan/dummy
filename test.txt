@@ -1,0 +1,24 @@
+def extract_field_from_feed(field_name):
+    # Step 1: Read the flat text file 'feed'
+    with open('feed.txt', 'r') as feed_file:
+        feed_content = feed_file.read()
+
+    # Step 2: Parse the mapping file for the field
+    mapping_file_path = f'{field_name}_mapping.txt'
+    with open(mapping_file_path, 'r') as mapping_file:
+        mapping_content = mapping_file.readlines()
+
+    # Step 3: Find the start position, end position, and length from the mapping file
+    start_pos, end_pos, field_length = None, None, None
+    for line in mapping_content:
+        if field_name in line:
+            start_pos, end_pos, field_length = line.strip().split(',')
+            break
+
+    # Step 4: Extract the value from the feed file based on the positions
+    start_pos = int(start_pos)
+    end_pos = int(end_pos)
+    field_value = feed_content[start_pos - 1:end_pos].strip()
+
+    return field_value, field_name
+
