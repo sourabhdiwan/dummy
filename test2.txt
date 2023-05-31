@@ -1,0 +1,12 @@
+import os
+
+def parse_folder(folder_path):
+    file_list = os.listdir(folder_path)
+    if len(file_list) == 1:
+        file_name = file_list[0]
+        file_path = os.path.join(folder_path, file_name)
+        return file_path
+    elif len(file_list) > 1:
+        raise ValueError("Error: More than one file found in the folder.")
+    else:
+        raise ValueError("Error: No files found in the folder.")
