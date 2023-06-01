@@ -1,12 +1,27 @@
-import os
+from allure_commons._allure import step, attach
+from allure_commons.types import AttachmentType
+from behave import given, then
 
-def parse_folder(folder_path):
-    file_list = os.listdir(folder_path)
-    if len(file_list) == 1:
-        file_name = file_list[0]
-        file_path = os.path.join(folder_path, file_name)
-        return file_path
-    elif len(file_list) > 1:
-        raise ValueError("Error: More than one file found in the folder.")
+@given('"{feed_field}" is "{feed_value}"')
+def step_given_feed_field(context, feed_field, feed_value):
+    context.feed_data[feed_field] = feed_value
+
+@given('"{db_field}" is "{db_value}" in the database')
+def step_given_db_field(context, db_field, db_value):
+    # Assume there is a database connection and logic to retrieve the value from the database
+    context.db_data[db_field] = db_value
+
+@then('"{feed_field}" should match with "{db_field}"')
+def step_then_compare_fields(context, feed_field, db_field):
+    feed_value = context.feed_data[feed_field]
+    db_value = context.db_data[db_field]
+
+    if feed_value == db_value:
+        with step(f"{feed_field} should match with {db_field}"):
+            step_msg = f"Feed Value: {feed_value}\nDB Value: {db_value}\nComparison Result: Passed"
+            attach(step_msg, name="Comparison Result", attachment_type=AttachmentType.TEXT)
     else:
-        raise ValueError("Error: No files found in the folder.")
+        with step(f"{feed_field} should match with {db_field}"):
+            step_msg = f"Feed Value: {feed_value}\nDB Value: {db_value}\nComparison Result: Failed"
+            attach(step_msg, name="Comparison Result", attachment_type=AttachmentType.TEXT)
+            assert feed_value == db_value, f"Values do not match. Feed: {feed_value}, DB: {db_value}"
