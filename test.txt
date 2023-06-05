@@ -1,0 +1,20 @@
+import datetime
+
+def modify_feed(input_file, output_location):
+    # Get the current date, month, hour, and seconds
+    now = datetime.datetime.now()
+    date_format = now.strftime("%d%m%H%M%S")
+
+    # Read the input file and modify the content
+    with open(input_file, 'r') as file:
+        lines = file.readlines()
+        lines[0] = 'TS' + date_format + lines[0][10:]
+        lines[2] = lines[2][:9] + date_format + lines[2][17:]
+
+    # Save a copy of the modified file to the specified location
+    output_file = output_location + '/modified_feed.txt'
+    with open(output_file, 'w') as file:
+        file.writelines(lines)
+
+    # Return the path of the saved file
+    return output_file
