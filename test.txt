@@ -1,0 +1,44 @@
+# filename: environment.py
+
+from behave import fixture, use_fixture
+
+@fixture
+def before_scenario(context, scenario):
+    # Code to execute before each scenario
+    print("Before scenario hook")
+
+@fixture
+def after_scenario(context, scenario):
+    # Code to execute after each scenario
+    print("After scenario hook")
+
+@fixture
+def after_all(context):
+    # Code to execute after all scenarios
+    print("After all hook")
+
+use_fixture(before_scenario, context)
+use_fixture(after_scenario, context)
+use_fixture(after_all, context)
+
+
+
+
+
+import os
+import glob
+from behave import fixture, use_fixture
+
+@fixture
+def before_all(context):
+    folder_path = "feed_file/session_feeds"  # Specify the folder path to delete files from
+
+    # Delete files in the folder
+    files = glob.glob(os.path.join(folder_path, "*"))
+    for file in files:
+        os.remove(file)
+
+    # Code to execute before all scenarios
+    print("Before all hook")
+
+use_fixture(before_all, context)
