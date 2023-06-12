@@ -1,64 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Graph</title>
+    <title>Status Graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
+        #graph {
+            width: 800px;
+            height: 400px;
+            margin: 50px auto;
         }
     </style>
 </head>
 <body>
     <div id="graph"></div>
-    
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
     <script>
         // Fetch data from the server-side variable
         var data = {{ data | safe }};
-        
-        // Extract x and y values from the data
-        var x = data.map(function(item) {
-            return item.timestamp;
+
+        // Extract unique URLs
+        var urls = [...new Set(data.map(item => item.url))];
+
+        // Initialize an empty list for traces
+        var traces = [];
+
+        // Define the colors for Pass and Fail status
+        var passColor = 'green';
+        var failColor = 'red';
+
+        // Loop through each URL and create a trace
+        urls.forEach(url => {
+            // Filter data for the current URL
+            var filteredData = data.filter(item => item.url === url);
+
+            // Extract x and y values from the filtered data
+            var x = filteredData.map(item => item.timestamp);
+            var y = filteredData.map(item => item.status === "Pass" ? passColor : failColor);
+
+            // Create the trace for the current URL
+            var trace = {
+                x: x,
+                y: y,
+                mode: 'markers',
+                marker: {
+                    size: 10,
+                    color: y,
+                },
+                text: x.map((timestamp, index) => `${url}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
+                hovertemplate: '%{text}<extra></extra>',
+                name: url,
+            };
+
+            // Add the trace to the list
+            traces.push(trace);
         });
-        var y = data.map(function(item) {
-            return item.status === 'Pass' ? 'green' : 'red';
-        });
-        
-        // Create the trace for the scatter plot
-        var trace = {
-            x: x,
-            y: y,
-            mode: 'markers',
-            marker: {
-                size: 10,
-                color: y,
-            },
-            text: data.map(function(item) {
-                return item.url;
-            }),
-            hovertemplate: '%{text}<extra></extra>',
-        };
-        
+
         // Set the layout options
         var layout = {
             title: 'Status Graph',
             xaxis: {
                 type: 'date',
                 tickformat: '%Y-%m-%d %H:%M:%S',
-                range: [x[0], x[x.length - 1]],
+                range: [data[0].timestamp, data[data.length - 1].timestamp],
             },
             yaxis: {
                 tickformat: '',
             },
             hovermode: 'closest',
         };
-        
+
         // Create the plot
-        Plotly.newPlot('graph', [trace], layout);
-        
+        Plotly.newPlot('graph', traces, layout);
+
         // Make the y-axis scrollable
         var graphDiv = document.getElementById('graph');
         graphDiv.onwheel = function(event) {
@@ -66,9 +79,4 @@
             var range = xaxis.range;
             var span = range[1] - range[0];
             var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
-            var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
-            Plotly.relayout(graphDiv, {xaxis: {range: newRange}});
-        };
-    </script>
-</body>
-</html>
+            var newRange = [range[0] + scrollAmount
