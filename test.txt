@@ -37,9 +37,6 @@
             var x = filteredData.map(item => item.timestamp);
             var y = filteredData.map(item => item.status === "Pass" ? passSymbol : failSymbol);
 
-            // Add a random offset to x-values to avoid overlapping
-            x = x.map(timestamp => timestamp + Math.random() * 1000);
-
             // Create the trace for the current URL
             var trace = {
                 x: x,
