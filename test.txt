@@ -24,9 +24,9 @@
         // Initialize an empty list for traces
         var traces = [];
 
-        // Define the colors for Pass and Fail status
-        var passColor = 'green';
-        var failColor = 'red';
+        // Define the marker symbols for Pass and Fail status
+        var passSymbol = 'circle';
+        var failSymbol = 'x';
 
         // Loop through each URL and create a trace
         urls.forEach(url => {
@@ -35,7 +35,10 @@
 
             // Extract x and y values from the filtered data
             var x = filteredData.map(item => item.timestamp);
-            var y = filteredData.map(item => item.status === "Pass" ? passColor : failColor);
+            var y = filteredData.map(item => item.status === "Pass" ? passSymbol : failSymbol);
+
+            // Add a random offset to x-values to avoid overlapping
+            x = x.map(timestamp => timestamp + Math.random() * 1000);
 
             // Create the trace for the current URL
             var trace = {
@@ -44,7 +47,7 @@
                 mode: 'markers',
                 marker: {
                     size: 10,
-                    color: y,
+                    symbol: y,
                 },
                 text: x.map((timestamp, index) => `${url}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
                 hovertemplate: '%{text}<extra></extra>',
@@ -79,4 +82,9 @@
             var range = xaxis.range;
             var span = range[1] - range[0];
             var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
-            var newRange = [range[0] + scrollAmount
+            var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
+            Plotly.relayout(graphDiv, {xaxis: {range: newRange}});
+        };
+    </script>
+</body>
+</html>
