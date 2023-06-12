@@ -56,8 +56,9 @@
             title: 'Status Graph',
             xaxis: {
                 type: 'date',
-                tickformat: '%Y-%m-%d %H:%M',
+                tickformat: '%Y-%m-%d %H:%M:%S',
                 range: [data[0].timestamp, data[data.length - 1].timestamp],
+                tickangle: -45,
             },
             yaxis: {
                 ticktext: urls,
