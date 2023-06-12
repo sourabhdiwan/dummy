@@ -6,7 +6,7 @@
     <style>
         #graph {
             width: 800px;
-            height: 400px;
+            height: 600px;
             margin: 50px auto;
         }
     </style>
@@ -56,13 +56,17 @@
             title: 'Status Graph',
             xaxis: {
                 type: 'date',
-                tickformat: '%Y-%m-%d %H:%M:%S',
+                tickformat: '%Y-%m-%d %H:%M',
                 range: [data[0].timestamp, data[data.length - 1].timestamp],
             },
             yaxis: {
                 ticktext: urls,
                 tickvals: Array.from(Array(urls.length).keys()),
                 automargin: true,
+                tickangle: -45,
+                tickfont: {
+                    size: 12,
+                },
             },
             hovermode: 'closest',
         };
