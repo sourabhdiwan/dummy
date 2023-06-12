@@ -17,7 +17,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
         // Fetch data from the server-side variable
-        var data = {{ data | tojson }};
+        var data = {{ data | safe }};
         
         // Extract x and y values from the data
         var x = data.map(function(item) {
@@ -67,8 +67,7 @@
             var span = range[1] - range[0];
             var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
             var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
-            xaxis.range = newRange;
-            Plotly.relayout(graphDiv, {xaxis: xaxis});
+            Plotly.relayout(graphDiv, {xaxis: {range: newRange}});
         };
     </script>
 </body>
