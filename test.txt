@@ -33,9 +33,22 @@
             // Filter data for the current URL
             var filteredData = data.filter(item => item.url === url);
 
+            // Create an object to store the count of data points for each timestamp
+            var countMap = {};
+
+            // Calculate the count of data points for each timestamp
+            filteredData.forEach(item => {
+                var timestamp = item.timestamp;
+                countMap[timestamp] = (countMap[timestamp] || 0) + 1;
+            });
+
             // Extract x and y values from the filtered data
             var x = filteredData.map(item => item.timestamp);
             var y = filteredData.map(item => item.status === "Pass" ? passSymbol : failSymbol);
+
+            // Adjust marker size and opacity based on the count of data points at the same timestamp
+            var markerSize = x.map(timestamp => 10 / Math.sqrt(countMap[timestamp]));
+            var markerOpacity = x.map(timestamp => 1 / Math.sqrt(countMap[timestamp]));
 
             // Create the trace for the current URL
             var trace = {
@@ -43,7 +56,8 @@
                 y: y,
                 mode: 'markers',
                 marker: {
-                    size: 10,
+                    size: markerSize,
+                    opacity: markerOpacity,
                     symbol: y,
                 },
                 text: x.map((timestamp, index) => `${url}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
@@ -80,8 +94,4 @@
             var span = range[1] - range[0];
             var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
             var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
-            Plotly.relayout(graphDiv, {xaxis: {range: newRange}});
-        };
-    </script>
-</body>
-</html>
+            Plotly
