@@ -18,22 +18,22 @@
         // Fetch data from the server-side variable
         var data = {{ data | safe }};
 
-        // Extract unique URLs
-        var urls = [...new Set(data.map(item => item.url))];
+        // Extract unique endpoint names
+        var endpoints = [...new Set(data.map(item => item.name))];
 
         // Initialize an empty list for traces
         var traces = [];
 
-        // Loop through each URL and create a trace
-        urls.forEach(url => {
-            // Filter data for the current URL
-            var filteredData = data.filter(item => item.url === url);
+        // Loop through each endpoint and create a trace
+        endpoints.forEach(endpoint => {
+            // Filter data for the current endpoint
+            var filteredData = data.filter(item => item.name === endpoint);
 
             // Extract x and y values from the filtered data
             var x = filteredData.map(item => item.timestamp);
             var y = filteredData.map(item => item.status === "Pass" ? "✓" : "✕");
 
-            // Create the trace for the current URL
+            // Create the trace for the current endpoint
             var trace = {
                 x: x,
                 y: y,
@@ -42,9 +42,9 @@
                     size: 12,
                     color: y.map(status => status === "✓" ? "green" : "red"),
                 },
-                text: x.map((timestamp, index) => `${url}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
+                text: x.map((timestamp, index) => `${endpoint}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
                 hovertemplate: '%{text}<extra></extra>',
-                name: url,
+                name: endpoint,
             };
 
             // Add the trace to the list
@@ -61,8 +61,8 @@
                 tickangle: -45,
             },
             yaxis: {
-                ticktext: urls,
-                tickvals: Array.from(Array(urls.length).keys()),
+                ticktext: endpoints,
+                tickvals: Array.from(Array(endpoints.length).keys()),
                 automargin: true,
                 tickangle: -45,
                 tickfont: {
