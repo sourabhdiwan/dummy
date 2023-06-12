@@ -3,101 +3,23 @@ import json
 
 app = Flask(__name__)
 
-# Load data from the JSON file
-with open('history.json') as f:
-    data = json.load(f)
-
 @app.route('/')
 def home():
     return 'This is the home route.'
 
 @app.route('/graph')
 def graph():
-    return render_template('graph.html')
+    # Load data from the JSON file
+    with open('history.json') as f:
+        data = json.load(f)
+    
+    return render_template('graph.html', data=data)
 
 @app.route('/data')
 def get_data():
+    with open('history.json') as f:
+        data = json.load(f)
     return jsonify(data)
 
 if __name__ == '__main__':
     app.run()
------------
-
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Graph</title>
-    <style>
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-    <div id="graph"></div>
-    
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script>
-        // Fetch data from the '/data' route
-        fetch('/data')
-            .then(response => response.json())
-            .then(data => {
-                // Extract x and y values from the data
-                var x = data.map(function(item) {
-                    return item.timestamp;
-                });
-                var y = data.map(function(item) {
-                    return item.status === 'up' ? 'green' : 'red';
-                });
-                
-                // Create the trace for the scatter plot
-                var trace = {
-                    x: x,
-                    y: y,
-                    mode: 'markers',
-                    marker: {
-                        size: 10,
-                        color: y,
-                    },
-                    text: data.map(function(item) {
-                        return item.url;
-                    }),
-                    hovertemplate: '%{text}<extra></extra>',
-                };
-                
-                // Set the layout options
-                var layout = {
-                    title: 'Status Graph',
-                    xaxis: {
-                        type: 'date',
-                        tickformat: '%Y-%m-%d %H:%M:%S',
-                        range: [x[0], x[x.length - 1]],
-                    },
-                    yaxis: {
-                        tickformat: '',
-                    },
-                    hovermode: 'closest',
-                };
-                
-                // Create the plot
-                Plotly.newPlot('graph', [trace], layout);
-                
-                // Make the y-axis scrollable
-                var graphDiv = document.getElementById('graph');
-                graphDiv.onwheel = function(event) {
-                    var xaxis = graphDiv._fullLayout.xaxis;
-                    var range = xaxis.range;
-                    var span = range[1] - range[0];
-                    var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
-                    var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
-                    xaxis.range = newRange;
-                    Plotly.relayout(graphDiv, {xaxis: xaxis});
-                };
-            });
-    </script>
-</body>
-</html>
