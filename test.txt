@@ -1,2 +1,18 @@
+# Extract the necessary data from JSON
+api_names = [entry['api_name'] for entry in data]
+statuses = [status_colors[entry['status']] for entry in data]
+timestamps = [datetime.strptime(entry['timestamp'], '%d-%m-%Y %H:%M %p') for entry in data]
+
+
 # Format timestamps as strings
-formatted_timestamps = [datetime.datetime.strptime(ts, '%d-%m-%Y %H:%M %p').strftime('%d-%m-%Y %I:%M %p') for ts in timestamps]
+formatted_timestamps = [timestamp.strftime('%d-%m-%Y %I:%M %p') for timestamp in timestamps]
+
+
+
+# Create a bar chart
+trace = go.Bar(
+    x=formatted_timestamps,
+    y=api_names,
+    marker=dict(color=statuses, line=dict(color='rgb(8,48,107)', width=0.5)),
+    orientation='h'
+)
