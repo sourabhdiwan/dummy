@@ -1,90 +1,42 @@
+@app.route('/')
+def index():
+    # Read data from JSON file
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+
+    # Extract the necessary data from JSON
+    api_names = [entry['api_name'] for entry in data]
+    statuses = [entry['status'] for entry in data]
+    timestamps = [entry['timestamp'] for entry in data]
+
+    # Create a bar chart
+    trace = go.Bar(
+        x=timestamps,
+        y=api_names,
+        marker=dict(color=statuses, colorscale='RdYlGn', line=dict(color='rgb(8,48,107)', width=0.5)),
+        orientation='h'
+    )
+    layout = go.Layout(
+        title='API Status',
+        yaxis=dict(autorange='reversed', showticklabels=True),
+        xaxis=dict(type='date'),
+        bargap=0.1
+    )
+    fig = go.Figure(data=[trace], layout=layout)
+
+    # Convert the chart to HTML and render the template
+    chart = fig.to_html(full_html=False, default_width='100%', default_height='500px')
+    return render_template('chart.html', chart=chart)
+
+-----------------
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Status Graph</title>
+    <title>Bar Chart</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        #graph {
-            width: 800px;
-            height: 600px;
-            margin: 50px auto;
-        }
-    </style>
 </head>
 <body>
-    <div id="graph"></div>
-
-    <script>
-        // Fetch data from the server-side variable
-        var data = {{ data | safe }};
-
-        // Extract unique endpoint names
-        var endpoints = [...new Set(data.map(item => item.name))];
-
-        // Initialize an empty list for traces
-        var traces = [];
-
-        // Loop through each endpoint and create a trace
-        endpoints.forEach(endpoint => {
-            // Filter data for the current endpoint
-            var filteredData = data.filter(item => item.name === endpoint);
-
-            // Extract x and y values from the filtered data
-            var x = filteredData.map(item => item.timestamp);
-            var y = filteredData.map(item => item.status === "Pass" ? "✓" : "✕");
-
-            // Create the trace for the current endpoint
-            var trace = {
-                x: x,
-                y: y,
-                mode: 'markers',
-                marker: {
-                    size: 12,
-                    color: y.map(status => status === "✓" ? "green" : "red"),
-                },
-                text: x.map((timestamp, index) => `${endpoint}<br>Status: ${y[index]}<br>Timestamp: ${timestamp}`),
-                hovertemplate: '%{text}<extra></extra>',
-                name: endpoint,
-            };
-
-            // Add the trace to the list
-            traces.push(trace);
-        });
-
-        // Set the layout options
-        var layout = {
-            title: 'Status Graph',
-            xaxis: {
-                type: 'date',
-                tickformat: '%Y-%m-%d %H:%M:%S',
-                range: [data[0].timestamp, data[data.length - 1].timestamp],
-                tickangle: -45,
-            },
-            yaxis: {
-                ticktext: endpoints,
-                tickvals: Array.from(Array(endpoints.length).keys()),
-                automargin: true,
-                tickangle: -45,
-                tickfont: {
-                    size: 12,
-                },
-            },
-            hovermode: 'closest',
-        };
-
-        // Create the plot
-        Plotly.newPlot('graph', traces, layout);
-
-        // Make the y-axis scrollable
-        var graphDiv = document.getElementById('graph');
-        graphDiv.onwheel = function(event) {
-            var xaxis = graphDiv._fullLayout.xaxis;
-            var range = xaxis.range;
-            var span = range[1] - range[0];
-            var scrollAmount = event.deltaY * span / graphDiv.clientWidth;
-            var newRange = [range[0] + scrollAmount, range[1] + scrollAmount];
-            Plotly.relayout(graphDiv, {xaxis: {range: newRange}});
-        };
-    </script>
+    <div>{{ chart|safe }}</div>
 </body>
 </html>
