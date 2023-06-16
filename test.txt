@@ -1,5 +1,12 @@
-xaxis=dict(
-        tickangle=45,
-        tickformat='%d-%m-%Y %I:%M %p',
-        type='category'
-    )
+<style>
+    .chart-container {
+        height: 500px; /* Adjust the desired height */
+        overflow-y: scroll;
+    }
+</style>
+
+
+
+<div class="chart-container">
+    {{ chart | safe }}
+</div>
