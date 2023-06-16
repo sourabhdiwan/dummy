@@ -1,12 +1,32 @@
-<style>
-    .chart-container {
-        height: 500px; /* Adjust the desired height */
-        overflow-y: scroll;
-    }
-</style>
+import datetime
 
+# Convert timestamp strings to datetime objects
+timestamps = [datetime.datetime.strptime(ts, "%d-%m-%Y %I:%M %p") for ts in timestamps]
 
+# Create a bar chart
+trace = go.Bar(
+    x=timestamps,
+    y=api_names,
+    marker=dict(
+        color=statuses,
+        line=dict(color='None')
+    ),
+    orientation='h'
+)
 
-<div class="chart-container">
-    {{ chart | safe }}
-</div>
+layout = go.Layout(
+    title='API Status',
+    yaxis=dict(autorange='reversed', showticklabels=True),
+    xaxis=dict(
+        tickangle=45,
+        tickformat='%d-%m-%Y %I:%M %p',
+        type='date',
+        range=[timestamps[0], timestamps[-1]],
+        tickvals=timestamps,  # Set the tick values to the timestamps
+        tickmode='array',  # Use 'array' mode for specifying tick values
+        ticktext=[ts.strftime("%d-%m-%Y %I:%M %p") for ts in timestamps]  # Convert timestamps to tick labels
+    ),
+    bargap=0.1
+)
+
+fig = go.Figure(data=[trace], layout=layout)
