@@ -1,17 +1,5 @@
-import requests
-import json
-from openpyxl import load_workbook
-
-# JIRA credentials
-username = "your_username"
-password = "your_password"
-
-# JIRA and Zephyr API endpoints
-jira_base_url = "https://your_jira_instance/rest/api/latest"
-zephyr_base_url = "https://your_jira_instance/rest/zephyr/latest"
-
-# Function to create a test case in JIRA with Zephyr
-def create_test_case(project_key, summary, description, labels):
+# Function to create a test case in JIRA with Zephyr under a specific component
+def create_test_case(project_key, component_id, summary, description, labels):
     # Create issue payload
     issue_payload = {
         "fields": {
@@ -19,7 +7,8 @@ def create_test_case(project_key, summary, description, labels):
             "summary": summary,
             "description": description,
             "issuetype": {"name": "Test"},
-            "labels": labels
+            "labels": labels,
+            "components": [{"id": component_id}]
         }
     }
 
@@ -41,4 +30,19 @@ def create_test_case(project_key, summary, description, labels):
         add_to_zephyr_payload = {
             "issues": [issue_key],
             "versionId": -1,  # -1 for the latest version
-            "cycleId": "your_cycle
+            "cycleId": "your_cycle_id",  # Replace with your Zephyr cycle ID
+        }
+
+        response = requests.post(
+            add_to_zephyr_url,
+            auth=(username, password),
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(add_to_zephyr_payload),
+        )
+
+        if response.status_code == 200:
+            print("Test case added to Zephyr successfully.")
+        else:
+            print("Failed to add the test case to Zephyr.")
+    else:
+        print("Failed to create the test case in JIRA.")
