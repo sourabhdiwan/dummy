@@ -1,0 +1,44 @@
+import requests
+import json
+from openpyxl import load_workbook
+
+# JIRA credentials
+username = "your_username"
+password = "your_password"
+
+# JIRA and Zephyr API endpoints
+jira_base_url = "https://your_jira_instance/rest/api/latest"
+zephyr_base_url = "https://your_jira_instance/rest/zephyr/latest"
+
+# Function to create a test case in JIRA with Zephyr
+def create_test_case(project_key, summary, description, labels):
+    # Create issue payload
+    issue_payload = {
+        "fields": {
+            "project": {"key": project_key},
+            "summary": summary,
+            "description": description,
+            "issuetype": {"name": "Test"},
+            "labels": labels
+        }
+    }
+
+    # Create test case in JIRA
+    create_issue_url = f"{jira_base_url}/issue"
+    response = requests.post(
+        create_issue_url,
+        auth=(username, password),
+        headers={"Content-Type": "application/json"},
+        data=json.dumps(issue_payload),
+    )
+
+    if response.status_code == 201:
+        issue_key = response.json()["key"]
+        print(f"Test case created successfully. Key: {issue_key}")
+
+        # Add the test case to Zephyr
+        add_to_zephyr_url = f"{zephyr_base_url}/executions/addTestsToCycle"
+        add_to_zephyr_payload = {
+            "issues": [issue_key],
+            "versionId": -1,  # -1 for the latest version
+            "cycleId": "your_cycle
