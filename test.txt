@@ -1,48 +1,46 @@
-# Function to create a test case in JIRA with Zephyr under a specific component
-def create_test_case(project_key, component_id, summary, description, labels):
-    # Create issue payload
-    issue_payload = {
-        "fields": {
-            "project": {"key": project_key},
-            "summary": summary,
-            "description": description,
-            "issuetype": {"name": "Test"},
-            "labels": labels,
-            "components": [{"id": component_id}]
-        }
+import requests
+
+def get_test_cases_with_label(project_key, label):
+    # JIRA credentials
+    username = "your_username"
+    password = "your_password"
+
+    # JIRA API endpoint for searching issues
+    jira_base_url = "https://your_jira_instance/rest/api/latest"
+    search_issues_url = f"{jira_base_url}/search"
+
+    # JQL query to search for issues with the specified label in the given project
+    jql_query = f'project = {project_key} AND labels = "{label}"'
+
+    # Request payload for searching issues
+    payload = {
+        "jql": jql_query,
+        "fields": "id"
     }
 
-    # Create test case in JIRA
-    create_issue_url = f"{jira_base_url}/issue"
+    # Send POST request to search for issues
     response = requests.post(
-        create_issue_url,
+        search_issues_url,
         auth=(username, password),
         headers={"Content-Type": "application/json"},
-        data=json.dumps(issue_payload),
+        json=payload
     )
 
-    if response.status_code == 201:
-        issue_key = response.json()["key"]
-        print(f"Test case created successfully. Key: {issue_key}")
-
-        # Add the test case to Zephyr
-        add_to_zephyr_url = f"{zephyr_base_url}/executions/addTestsToCycle"
-        add_to_zephyr_payload = {
-            "issues": [issue_key],
-            "versionId": -1,  # -1 for the latest version
-            "cycleId": "your_cycle_id",  # Replace with your Zephyr cycle ID
-        }
-
-        response = requests.post(
-            add_to_zephyr_url,
-            auth=(username, password),
-            headers={"Content-Type": "application/json"},
-            data=json.dumps(add_to_zephyr_payload),
-        )
-
-        if response.status_code == 200:
-            print("Test case added to Zephyr successfully.")
-        else:
-            print("Failed to add the test case to Zephyr.")
+    if response.status_code == 200:
+        # Parse the response and extract issue IDs
+        issues_data = response.json()["issues"]
+        issue_ids = [issue["id"] for issue in issues_data]
+        return issue_ids
     else:
-        print("Failed to create the test case in JIRA.")
+        print("Failed to retrieve test cases.")
+        return []
+
+# Example usage
+project_key = "YOUR_PROJECT_KEY"  # Replace with your JIRA project key
+label = "your_label"  # Replace with the specific label you want to filter by
+
+# Get list of test case IDs with the specified label
+test_case_ids = get_test_cases_with_label(project_key, label)
+
+# Print the list of test case IDs
+print(test_case_ids)
