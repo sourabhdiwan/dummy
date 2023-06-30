@@ -1,46 +1,43 @@
-import requests
+from configparser import ConfigParser
+from jira import JIRA
 
-def get_test_cases_with_label(project_key, label):
-    # JIRA credentials
-    username = "your_username"
-    password = "your_password"
+def before_all(context):
+    # Read the configuration from behave.ini
+    config = ConfigParser()
+    config.read('behave.ini')
 
-    # JIRA API endpoint for searching issues
-    jira_base_url = "https://your_jira_instance/rest/api/latest"
-    search_issues_url = f"{jira_base_url}/search"
+    # Get the Jira configuration values
+    jira_url = config.get('Jira', 'url')
+    jira_username = config.get('Jira', 'username')
+    jira_password = config.get('Jira', 'password')
+    
+    # Initialize JIRA client
+    jira = JIRA(server=jira_url, basic_auth=(jira_username, jira_password))
+    
+    # Rest of the code to create a new cycle and attach test cases
+    cycle_name = "New Cycle"
+    label = "specific_label"
+    test_cases = jira.search_issues('labels = "{}"'.format(label))
+    cycle = jira.create_cycle(name=cycle_name, project_id="project_id", version_id="version_id")
+    for test_case in test_cases:
+        jira.add_tests_to_cycle(cycle_id=cycle.id, issue_ids=[test_case.id])
 
-    # JQL query to search for issues with the specified label in the given project
-    jql_query = f'project = {project_key} AND labels = "{label}"'
+def after_scenario(context, scenario):
+    # Read the configuration from behave.ini
+    config = ConfigParser()
+    config.read('behave.ini')
 
-    # Request payload for searching issues
-    payload = {
-        "jql": jql_query,
-        "fields": "id"
-    }
-
-    # Send POST request to search for issues
-    response = requests.post(
-        search_issues_url,
-        auth=(username, password),
-        headers={"Content-Type": "application/json"},
-        json=payload
-    )
-
-    if response.status_code == 200:
-        # Parse the response and extract issue IDs
-        issues_data = response.json()["issues"]
-        issue_ids = [issue["id"] for issue in issues_data]
-        return issue_ids
-    else:
-        print("Failed to retrieve test cases.")
-        return []
-
-# Example usage
-project_key = "YOUR_PROJECT_KEY"  # Replace with your JIRA project key
-label = "your_label"  # Replace with the specific label you want to filter by
-
-# Get list of test case IDs with the specified label
-test_case_ids = get_test_cases_with_label(project_key, label)
-
-# Print the list of test case IDs
-print(test_case_ids)
+    # Get the Jira configuration values
+    jira_url = config.get('Jira', 'url')
+    jira_username = config.get('Jira', 'username')
+    jira_password = config.get('Jira', 'password')
+    
+    # Initialize JIRA client
+    jira = JIRA(server=jira_url, basic_auth=(jira_username, jira_password))
+    
+    # Rest of the code to update the pass/fail status of the scenario in Jira
+    test_case_id = context.test_case['id']
+    test_case_status = "Pass" if scenario.status == "passed" else "Fail"
+    
+    # Update the test case status in Jira
+    jira.update_test_result(test_issue_key=test_case_id, status=test_case_status)
