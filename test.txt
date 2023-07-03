@@ -1,43 +1,63 @@
-from configparser import ConfigParser
-from jira import JIRA
+import requests
 
-def before_all(context):
-    # Read the configuration from behave.ini
-    config = ConfigParser()
-    config.read('behave.ini')
+@fixture
+def update_test_status(context, scenario):
+    # Connect to Jira/Zephyr API and update the test status for the given scenario
+    # Use the scenario name or any other identifier to find the corresponding test case in Jira/Zephyr
+    # Update the test case status accordingly (e.g., Pass, Fail, etc.)
+    # You can use the requests library or any other suitable library for making API requests
 
-    # Get the Jira configuration values
-    jira_url = config.get('Jira', 'url')
-    jira_username = config.get('Jira', 'username')
-    jira_password = config.get('Jira', 'password')
+    # Example code using requests library:
+    cycle_id = 'your_cycle_id'  # Replace with the ID of your Zephyr cycle
+    test_case_name = scenario.name  # Replace with the appropriate way to identify your test case (e.g., by name, ID, etc.)
+    status = 'Pass'  # Update with the appropriate status based on your scenario result
+
+    # Get the test case ID using its name or any other identifier
+    test_case_id = get_test_case_id(test_case_name)
+
+    # Update the test case status within the specified cycle
+    url = f'https://your-jira-url/rest/zapi/latest/execution/updateStatusByCycle/{cycle_id}'
+    data = {
+        'executionId': test_case_id,
+        'status': status
+    }
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer your_token'
+    }
+    response = requests.put(url, json=data, headers=headers)
+    # Check response status code and handle any errors
     
-    # Initialize JIRA client
-    jira = JIRA(server=jira_url, basic_auth=(jira_username, jira_password))
+    # Optionally, you can log the status update or any other relevant information
+    print(f"Test case status updated for scenario: {scenario.name}")
     
-    # Rest of the code to create a new cycle and attach test cases
-    cycle_name = "New Cycle"
-    label = "specific_label"
-    test_cases = jira.search_issues('labels = "{}"'.format(label))
-    cycle = jira.create_cycle(name=cycle_name, project_id="project_id", version_id="version_id")
-    for test_case in test_cases:
-        jira.add_tests_to_cycle(cycle_id=cycle.id, issue_ids=[test_case.id])
+    # Clean up or perform any other necessary actions
+    
+    # Note: Make sure to update the URL and headers with the correct values for your Jira/Zephyr instance
+
+def get_test_case_id(test_case_name):
+    # Implement a function to retrieve the test case ID using its name or any other identifier
+    # This function can make a separate API call to get the test case details or use any other method to find the ID
+    # Return the test case ID as a string or integer
+
+    # Example code:
+    url = 'https://your-jira-url/rest/api/2/search'
+    query = f'project = "YOUR_PROJECT_KEY" AND summary ~ "{test_case_name}"'  # Update with your project key and search criteria
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer your_token'
+    }
+    response = requests.get(url, params={'jql': query}, headers=headers)
+    # Check response status code and handle any errors
+    
+    # Parse the response to extract the test case ID
+    # Return the test case ID as a string or integer
+    
+    return test_case_id
+
+def before_scenario(context, scenario):
+    # ...
 
 def after_scenario(context, scenario):
-    # Read the configuration from behave.ini
-    config = ConfigParser()
-    config.read('behave.ini')
-
-    # Get the Jira configuration values
-    jira_url = config.get('Jira', 'url')
-    jira_username = config.get('Jira', 'username')
-    jira_password = config.get('Jira', 'password')
-    
-    # Initialize JIRA client
-    jira = JIRA(server=jira_url, basic_auth=(jira_username, jira_password))
-    
-    # Rest of the code to update the pass/fail status of the scenario in Jira
-    test_case_id = context.test_case['id']
-    test_case_status = "Pass" if scenario.status == "passed" else "Fail"
-    
-    # Update the test case status in Jira
-    jira.update_test_result(test_issue_key=test_case_id, status=test_case_status)
+    # Use the update_test_status fixture
+    use_fixture(update_test_status, context, scenario)
