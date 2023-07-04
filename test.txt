@@ -1,34 +1,14 @@
-from jira import JIRA
-import requests
+import pickle
 
-# Connect to Jira
-jira = JIRA(server='https://your-jira-url', basic_auth=('username', 'password'))
+# Example object to be pickled
+data = {'name': 'John', 'age': 30, 'city': 'New York'}
 
-# Get the execution details using Zephyr API
-cycle_id = 'CYCLE-123'  # Replace with the ID of your Zephyr cycle
-url = f'https://your-jira-url/rest/zapi/latest/execution?cycleId={cycle_id}'
-response = requests.get(url, auth=('username', 'password'))
-executions = response.json().get('executions', [])
+# Pickling the object
+with open('data.pickle', 'wb') as f:
+    pickle.dump(data, f)
 
-# Get the last executed scenario and its status in Behave
-last_executed_scenario = context.scenario
-scenario_name = last_executed_scenario.name
-scenario_status = last_executed_scenario.status.name
+# Unpickling the object
+with open('data.pickle', 'rb') as f:
+    unpickled_data = pickle.load(f)
 
-# Iterate through the executions and update the test status
-for execution in executions:
-    execution_id = execution['id']
-    summary = execution['issueSummary']
-    
-    if summary == scenario_name:
-        # Update the test status using the execution API endpoint
-        url = f'https://your-jira-url/rest/zapi/latest/execution/{execution_id}/execute'
-        data = {
-            'status': 'Pass'  # Update with the appropriate status based on scenario_status
-        }
-        response = requests.put(url, json=data, auth=('username', 'password'))
-        if response.status_code == 200:
-            print(f"Test status updated for scenario: {scenario_name}")
-        else:
-            print(f"Failed to update test status for scenario: {scenario_name}")
-        break
+print(unpickled_data)
