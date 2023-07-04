@@ -1,14 +1,23 @@
 import pickle
 
-# Example object to be pickled
-data = {'name': 'John', 'age': 30, 'city': 'New York'}
+# Example variables
+uid = 'my_username'
+password = 'my_password'
 
-# Pickling the object
-with open('data.pickle', 'wb') as f:
-    pickle.dump(data, f)
+# Pickling the variables separately
+with open('uid.pickle', 'wb') as f:
+    pickle.dump(uid, f)
 
-# Unpickling the object
-with open('data.pickle', 'rb') as f:
-    unpickled_data = pickle.load(f)
+with open('password.pickle', 'wb') as f:
+    pickle.dump(password, f)
 
-print(unpickled_data)
+# Unpickling the variables
+with open('uid.pickle', 'rb') as f:
+    unpickled_uid = pickle.load(f)
+
+with open('password.pickle', 'rb') as f:
+    unpickled_password = pickle.load(f)
+
+# Printing the variables
+print("UID:", unpickled_uid)
+print("Password:", unpickled_password)
