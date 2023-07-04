@@ -1,23 +1,61 @@
-import pickle
+from cryptography.fernet import Fernet
 
-# Example variables
-uid = 'my_username'
-password = 'my_password'
+def generate_key():
+    """
+    Generate a random encryption key and save it to a file.
+    """
+    key = Fernet.generate_key()
+    with open('encryption_key.txt', 'wb') as key_file:
+        key_file.write(key)
 
-# Pickling the variables separately
-with open('uid.pickle', 'wb') as f:
-    pickle.dump(uid, f)
+def encrypt(uid, password):
+    """
+    Encrypt the UID and password using the encryption key.
+    Save the encrypted values to separate files.
+    """
+    with open('encryption_key.txt', 'rb') as key_file:
+        key = key_file.read()
+    
+    cipher_suite = Fernet(key)
+    encrypted_uid = cipher_suite.encrypt(uid.encode())
+    encrypted_password = cipher_suite.encrypt(password.encode())
+    
+    with open('encrypted_uid.txt', 'wb') as uid_file:
+        uid_file.write(encrypted_uid)
+    
+    with open('encrypted_password.txt', 'wb') as password_file:
+        password_file.write(encrypted_password)
 
-with open('password.pickle', 'wb') as f:
-    pickle.dump(password, f)
+def decrypt():
+    """
+    Decrypt the UID and password using the encryption key.
+    Return the original values.
+    """
+    with open('encryption_key.txt', 'rb') as key_file:
+        key = key_file.read()
+    
+    cipher_suite = Fernet(key)
+    
+    with open('encrypted_uid.txt', 'rb') as uid_file:
+        encrypted_uid = uid_file.read()
+    
+    with open('encrypted_password.txt', 'rb') as password_file:
+        encrypted_password = password_file.read()
+    
+    decrypted_uid = cipher_suite.decrypt(encrypted_uid).decode()
+    decrypted_password = cipher_suite.decrypt(encrypted_password).decode()
+    
+    return decrypted_uid, decrypted_password
 
-# Unpickling the variables
-with open('uid.pickle', 'rb') as f:
-    unpickled_uid = pickle.load(f)
+# Generate a new encryption key (run only once)
+generate_key()
 
-with open('password.pickle', 'rb') as f:
-    unpickled_password = pickle.load(f)
+# Encrypt UID and password
+uid = input("Enter your UID: ")
+password = input("Enter your password: ")
+encrypt(uid, password)
 
-# Printing the variables
-print("UID:", unpickled_uid)
-print("Password:", unpickled_password)
+# Decrypt UID and password
+decrypted_uid, decrypted_password = decrypt()
+print("Decrypted UID:", decrypted_uid)
+print("Decrypted password:", decrypted_password)
