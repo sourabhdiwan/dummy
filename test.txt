@@ -1,18 +1,30 @@
-import os
-
-def update_environment_properties_file(cycle_id, url):
-    properties_file_path = os.path.join("allure", "results", "environment.properties")
-    with open(properties_file_path, "w") as properties_file:
-        properties_file.write(f"CycleID={cycle_id}\n")
-        properties_file.write(f"URL={url}\n")
-
-def after_all(context):
-    if context.failed:
-        update_environment_properties_file("N/A", "N/A")
-    else:
-        # Get the cycle ID and URL from somewhere in your context
-        cycle_id = context.cycle_id
-        url = context.url
-
-        # Update environment.properties file
-        update_environment_properties_file(cycle_id, url)
+html_table = """
+<html>
+<head></head>
+<body>
+    <p>Hello!</p>
+    <p>Here's an example of an HTML table:</p>
+    
+    <table style="border-collapse: collapse;">
+        <tr>
+            <th style="border: 1px solid black; padding: 5px;">Header 1</th>
+            <th style="border: 1px solid black; padding: 5px;">Header 2</th>
+            <th style="border: 1px solid black; padding: 5px;">Header 3</th>
+        </tr>
+        <tr>
+            <td style="border: 1px solid black; padding: 5px;">Value 1</td>
+            <td style="border: 1px solid black; padding: 5px;">Value 2</td>
+            <td style="border: 1px solid black; padding: 5px;">Value 3</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid black; padding: 5px;">Value 4</td>
+            <td style="border: 1px solid black; padding: 5px;">Value 5</td>
+            <td style="border: 1px solid black; padding: 5px;">Value 6</td>
+        </tr>
+    </table>
+    
+    <p>Regards,</p>
+    <p>Your Name</p>
+</body>
+</html>
+"""
