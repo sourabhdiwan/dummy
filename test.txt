@@ -1,61 +1,18 @@
-from cryptography.fernet import Fernet
+import os
 
-def generate_key():
-    """
-    Generate a random encryption key and save it to a file.
-    """
-    key = Fernet.generate_key()
-    with open('encryption_key.txt', 'wb') as key_file:
-        key_file.write(key)
+def update_environment_properties_file(cycle_id, url):
+    properties_file_path = os.path.join("allure", "results", "environment.properties")
+    with open(properties_file_path, "w") as properties_file:
+        properties_file.write(f"CycleID={cycle_id}\n")
+        properties_file.write(f"URL={url}\n")
 
-def encrypt(uid, password):
-    """
-    Encrypt the UID and password using the encryption key.
-    Save the encrypted values to separate files.
-    """
-    with open('encryption_key.txt', 'rb') as key_file:
-        key = key_file.read()
-    
-    cipher_suite = Fernet(key)
-    encrypted_uid = cipher_suite.encrypt(uid.encode())
-    encrypted_password = cipher_suite.encrypt(password.encode())
-    
-    with open('encrypted_uid.txt', 'wb') as uid_file:
-        uid_file.write(encrypted_uid)
-    
-    with open('encrypted_password.txt', 'wb') as password_file:
-        password_file.write(encrypted_password)
+def after_all(context):
+    if context.failed:
+        update_environment_properties_file("N/A", "N/A")
+    else:
+        # Get the cycle ID and URL from somewhere in your context
+        cycle_id = context.cycle_id
+        url = context.url
 
-def decrypt():
-    """
-    Decrypt the UID and password using the encryption key.
-    Return the original values.
-    """
-    with open('encryption_key.txt', 'rb') as key_file:
-        key = key_file.read()
-    
-    cipher_suite = Fernet(key)
-    
-    with open('encrypted_uid.txt', 'rb') as uid_file:
-        encrypted_uid = uid_file.read()
-    
-    with open('encrypted_password.txt', 'rb') as password_file:
-        encrypted_password = password_file.read()
-    
-    decrypted_uid = cipher_suite.decrypt(encrypted_uid).decode()
-    decrypted_password = cipher_suite.decrypt(encrypted_password).decode()
-    
-    return decrypted_uid, decrypted_password
-
-# Generate a new encryption key (run only once)
-generate_key()
-
-# Encrypt UID and password
-uid = input("Enter your UID: ")
-password = input("Enter your password: ")
-encrypt(uid, password)
-
-# Decrypt UID and password
-decrypted_uid, decrypted_password = decrypt()
-print("Decrypted UID:", decrypted_uid)
-print("Decrypted password:", decrypted_password)
+        # Update environment.properties file
+        update_environment_properties_file(cycle_id, url)
