@@ -1,24 +1,50 @@
 import requests
 import json
+import datetime
 
-# Step 1: Read the JSON file with API results
-with open('api_results.json', 'r') as file:
-    api_results = json.load(file)
+def send_email():
+    # Step 1: Read the JSON file with API results
+    with open('api_results.json', 'r') as file:
+        api_results = json.load(file)
 
-failed_apis = [api for api in api_results if api['status'] == 'failure']
+    failed_apis = [api for api in api_results if api['status'] == 'failure']
 
-# Step 2: Prepare email data
-email_data = {
-    'to': 'recipient@example.com',
-    'subject': f"Failed API details on {failed_apis[0]['timestamp']}",
-    'body': json.dumps(failed_apis)
-}
+    # Step 2: Check if email was already sent today
+    last_sent_date = datetime.date.today()  # Date when email was last sent
+    current_date = datetime.date.today()  # Current date
 
-# Step 3: Send POST request for the email API
-email_api_url = 'https://api.example.com/send-email'  # Replace with the actual API endpoint URL
-response = requests.post(email_api_url, json=email_data)
+    if last_sent_date == current_date:
+        print('Email already sent today.')
+        return False  # Return False to indicate that email was not sent
 
-if response.status_code == 200:
-    print('Email sent successfully.')
+    # Step 3: Prepare email data
+    email_data = {
+        'to': 'recipient@example.com',
+        'subject': f"Failed API details on {failed_apis[0]['timestamp']}",
+        'body': json.dumps(failed_apis)
+    }
+
+    # Step 4: Send POST request for the email API
+    email_api_url = 'https://api.example.com/send-email'  # Replace with the actual API endpoint URL
+    response = requests.post(email_api_url, json=email_data)
+
+    if response.status_code == 200:
+        print('Email sent successfully.')
+        # Update the last sent date to the current date
+        with open('last_sent_date.txt', 'w') as file:
+            file.write(str(current_date))
+        return True  # Return True to indicate that email was sent successfully
+    else:
+        print('Failed to send email.')
+        return False  # Return False to indicate that email was not sent successfully
+
+# Call the function
+email_sent = send_email()
+
+# Use the `email_sent` flag in your other script to handle further logic
+if email_sent:
+    # Perform additional actions if email was sent successfully
+    pass
 else:
-    print('Failed to send email.')
+    # Perform additional actions if email was not sent
+    pass
