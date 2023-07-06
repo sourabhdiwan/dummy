@@ -1,30 +1,24 @@
-html_table = """
-<html>
-<head></head>
-<body>
-    <p>Hello!</p>
-    <p>Here's an example of an HTML table:</p>
-    
-    <table style="border-collapse: collapse;">
-        <tr>
-            <th style="border: 1px solid black; padding: 5px;">Header 1</th>
-            <th style="border: 1px solid black; padding: 5px;">Header 2</th>
-            <th style="border: 1px solid black; padding: 5px;">Header 3</th>
-        </tr>
-        <tr>
-            <td style="border: 1px solid black; padding: 5px;">Value 1</td>
-            <td style="border: 1px solid black; padding: 5px;">Value 2</td>
-            <td style="border: 1px solid black; padding: 5px;">Value 3</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid black; padding: 5px;">Value 4</td>
-            <td style="border: 1px solid black; padding: 5px;">Value 5</td>
-            <td style="border: 1px solid black; padding: 5px;">Value 6</td>
-        </tr>
-    </table>
-    
-    <p>Regards,</p>
-    <p>Your Name</p>
-</body>
-</html>
-"""
+import requests
+import json
+
+# Step 1: Read the JSON file with API results
+with open('api_results.json', 'r') as file:
+    api_results = json.load(file)
+
+failed_apis = [api for api in api_results if api['status'] == 'failure']
+
+# Step 2: Prepare email data
+email_data = {
+    'to': 'recipient@example.com',
+    'subject': f"Failed API details on {failed_apis[0]['timestamp']}",
+    'body': json.dumps(failed_apis)
+}
+
+# Step 3: Send POST request for the email API
+email_api_url = 'https://api.example.com/send-email'  # Replace with the actual API endpoint URL
+response = requests.post(email_api_url, json=email_data)
+
+if response.status_code == 200:
+    print('Email sent successfully.')
+else:
+    print('Failed to send email.')
