@@ -9,12 +9,16 @@ def send_email():
 
     failed_apis = [api for api in api_results if api['status'] == 'failure']
 
-    # Step 2: Check if email was already sent today
+    # Step 2: Check if email should be sent today
     last_sent_date = datetime.date.today()  # Date when email was last sent
     current_date = datetime.date.today()  # Current date
 
     if last_sent_date == current_date:
         print('Email already sent today.')
+        return False  # Return False to indicate that email was not sent
+
+    if len(failed_apis) == 0:
+        print('No failures found. Email not sent.')
         return False  # Return False to indicate that email was not sent
 
     # Step 3: Prepare email data
