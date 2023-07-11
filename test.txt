@@ -21,20 +21,31 @@ def send_email():
 
     if last_sent_date == current_date:
         print('Email already sent today.')
-        return False  # Return False to indicate that email was not sent
+        return False  # Return False to indicate that the email was not sent
 
     if len(failed_apis) == 0:
         print('No failures found. Email not sent.')
-        return False  # Return False to indicate that email was not sent
+        return False  # Return False to indicate that the email was not sent
 
     # Step 3: Prepare email body as an HTML table
     table_rows = ''
     for api in failed_apis:
-        table_rows += f'<tr><td>{api["api name"]}</td><td>{api["status"]}</td><td>{api["timestamp"]}</td></tr>'
+        table_rows += f"""
+            <tr>
+                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['api name']}</td>
+                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['status']}</td>
+                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['timestamp']}</td>
+            </tr>
+        """
 
-    email_body = f'''
+    email_body = f"""
         <html>
-        <head></head>
+        <head>
+            <style>
+                table {{ border-collapse: collapse; }}
+                th, td {{ border: 1px solid black; padding: 5px; text-align: center; }}
+            </style>
+        </head>
         <body>
             <h2>Failed API Details:</h2>
             <table>
@@ -47,7 +58,7 @@ def send_email():
             </table>
         </body>
         </html>
-    '''
+    """
 
     # Step 4: Prepare email data
     email_data = {
@@ -65,10 +76,10 @@ def send_email():
         # Update the last sent date to the current date
         with open('last_sent_date.txt', 'w') as file:
             file.write(str(current_date))
-        return True  # Return True to indicate that email was sent successfully
+        return True  # Return True to indicate that the email was sent successfully
     else:
         print('Failed to send email.')
-        return False  # Return False to indicate that email was not sent successfully
+        return False  # Return False to indicate that the email was not sent successfully
 
 # Call the function
 if __name__ == '__main__':
@@ -76,8 +87,8 @@ if __name__ == '__main__':
 
     # Use the `email_sent` flag in your other script to handle further logic
     if email_sent:
-        # Perform additional actions if email was sent successfully
+        # Perform additional actions if the email was sent successfully
         pass
     else:
-        # Perform additional actions if email was not sent
+        # Perform additional actions if the email was not sent
         pass
