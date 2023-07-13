@@ -1,94 +1,39 @@
-import requests
-from datetime import datetime, date
-
-def send_email():
-    # Step 1: Read the JSON file with API results
-    with open('api_results.json', 'r') as file:
-        api_results = json.load(file)
-
-    failed_apis = [api for api in api_results if api['status'] == 'failure']
-
-    # Step 2: Check if email should be sent today
-    with open('last_sent_date.txt', 'r') as file:
-        last_sent_date_str = file.read().strip()
-
-    if last_sent_date_str:
-        last_sent_date = datetime.strptime(last_sent_date_str, "%Y-%m-%d").date()
-    else:
-        last_sent_date = date.min
-
-    current_date = date.today()  # Current date
-
-    if last_sent_date == current_date:
-        print('Email already sent today.')
-        return False  # Return False to indicate that the email was not sent
-
-    if len(failed_apis) == 0:
-        print('No failures found. Email not sent.')
-        return False  # Return False to indicate that the email was not sent
-
-    # Step 3: Prepare email body as an HTML table
-    table_rows = ''
-    for api in failed_apis:
-        table_rows += f"""
-            <tr>
-                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['api name']}</td>
-                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['status']}</td>
-                <td style="border: 1px solid black; padding: 5px; text-align: center;">{api['timestamp']}</td>
-            </tr>
-        """
-
-    email_body = f"""
-        <html>
-        <head>
-            <style>
-                table {{ border-collapse: collapse; }}
-                th, td {{ border: 1px solid black; padding: 5px; text-align: center; }}
-            </style>
-        </head>
-        <body>
-            <h2>Failed API Details:</h2>
-            <table>
-                <tr>
-                    <th>API Name</th>
-                    <th>Status</th>
-                    <th>Timestamp</th>
-                </tr>
-                {table_rows}
-            </table>
-        </body>
-        </html>
-    """
-
-    # Step 4: Prepare email data
-    email_data = {
-        'to': 'recipient@example.com',
-        'subject': f"Failed API details on {failed_apis[0]['timestamp']}",
-        'body': email_body
+pipeline {
+    agent any
+    
+    stages {
+        stage('Setup') {
+            steps {
+                // Install dependencies, set up Python environment, etc.
+            }
+        }
+        
+        stage('Execute Behave Tests') {
+            steps {
+                // Run the Behave tests
+                sh 'behave'
+            }
+        }
+        
+        stage('Generate Allure Report') {
+            steps {
+                // Generate Allure report
+                sh 'allure generate allure/results --clean -o allure/reports'
+            }
+        }
+        
+        stage('Publish Allure Report') {
+            steps {
+                // Publish the Allure report in Jenkins
+                publishHTML([target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'allure/reports',
+                    reportFiles: 'index.html',
+                    reportName: 'Allure Report'
+                ]])
+            }
+        }
     }
-
-    # Step 5: Send POST request for the email API
-    email_api_url = 'https://api.example.com/send-email'  # Replace with the actual API endpoint URL
-    response = requests.post(email_api_url, json=email_data)
-
-    if response.status_code == 200:
-        print('Email sent successfully.')
-        # Update the last sent date to the current date
-        with open('last_sent_date.txt', 'w') as file:
-            file.write(str(current_date))
-        return True  # Return True to indicate that the email was sent successfully
-    else:
-        print('Failed to send email.')
-        return False  # Return False to indicate that the email was not sent successfully
-
-# Call the function
-if __name__ == '__main__':
-    email_sent = send_email()
-
-    # Use the `email_sent` flag in your other script to handle further logic
-    if email_sent:
-        # Perform additional actions if the email was sent successfully
-        pass
-    else:
-        # Perform additional actions if the email was not sent
-        pass
+}
