@@ -10,8 +10,8 @@ pipeline {
         
         stage('Execute Behave Tests') {
             steps {
-                // Run the Behave tests and capture the exit code
                 script {
+                    // Run the Behave tests and capture the exit code
                     def exitCode = sh script: 'behave', returnStatus: true
                     if (exitCode != 0) {
                         currentBuild.result = 'UNSTABLE'  // Mark the build as unstable in case of failures
@@ -22,11 +22,9 @@ pipeline {
         
         stage('Generate Allure Report') {
             steps {
-                // Always generate Allure report, regardless of test failures
-                try {
+                script {
+                    // Generate Allure report
                     sh 'allure generate allure/results --clean -o allure/reports'
-                } catch (Exception e) {
-                    echo "Failed to generate Allure report: ${e.message}"
                 }
             }
         }
