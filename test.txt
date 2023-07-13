@@ -1,46 +1,21 @@
 pipeline {
     agent any
-    
+
     stages {
-        stage('Setup') {
-            steps {
-                // Install dependencies, set up Python environment, etc.
-            }
-        }
-        
-        stage('Execute Behave Tests') {
-            steps {
-                script {
-                    // Run the Behave tests and capture the exit code
-                    def exitCode = sh script: 'behave', returnStatus: true
-                    if (exitCode != 0) {
-                        currentBuild.result = 'UNSTABLE'  // Mark the build as unstable in case of failures
-                    }
-                }
-            }
-        }
-        
-        stage('Generate Allure Report') {
-            steps {
-                script {
-                    // Generate Allure report
-                    sh 'allure generate allure/results --clean -o allure/reports'
-                }
-            }
-        }
-        
-        stage('Publish Allure Report') {
-            steps {
-                // Publish the Allure report in Jenkins
-                publishHTML([target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'allure/reports',
-                    reportFiles: 'index.html',
-                    reportName: 'Allure Report'
-                ]])
-            }
+        // Your existing stages here
+    }
+
+    post {
+        always {
+            // Any other post-build actions
+            
+            emailext (
+                subject: 'Build Notification - ${currentBuild.fullDisplayName}',
+                body: 'The build status is ${currentBuild.currentResult}.',
+                to: 'recipient@example.com',
+                attachLog: true,
+                compressLog: true
+            )
         }
     }
 }
